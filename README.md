@@ -34,6 +34,11 @@ touch .env
 
 ```env
 # Database
+# สำหรับ Local: ใช้ local PostgreSQL
+# DATABASE_URL="postgresql://user:password@localhost:5432/jobmatch"
+
+# สำหรับ Supabase: ใช้ Connection String จาก Supabase Dashboard
+# DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
 DATABASE_URL="postgresql://user:password@localhost:5432/jobmatch"
 
 # NextAuth

@@ -104,6 +104,10 @@ git push -u origin main
 3. ไปที่ **Settings** → **Database**
 4. คัดลอก **Connection string** (URI format)
    - Format: `postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`
+   - **สำหรับ Production**: แนะนำให้ใช้ **Connection Pooling** แทน (ดูในแท็บ Connection pooling)
+   - Pooling Format: `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
+
+**📖 ดูคำแนะนำละเอียดใน `SUPABASE_SETUP.md`**
 
 ### ตัวเลือกที่ 3: Neon (ฟรี)
 
