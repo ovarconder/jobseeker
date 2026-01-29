@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 
 export default async function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname
+    const path = req.nextUrl.pathname
   const session = await auth()
 
   // Public routes
@@ -29,10 +29,10 @@ export default async function middleware(req: NextRequest) {
       if (session.user?.role !== 'COMPANY') {
         return NextResponse.redirect(new URL('/login', req.url))
       }
+      }
     }
-  }
 
-  return NextResponse.next()
+    return NextResponse.next()
 }
 
 export const config = {

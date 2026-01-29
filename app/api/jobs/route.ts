@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
-    if (!session || session.user.role !== 'COMPANY') {
+    if (!session || session.user?.role !== 'COMPANY') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     // Get company
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: session.user?.id },
       include: { company: true },
     })
 

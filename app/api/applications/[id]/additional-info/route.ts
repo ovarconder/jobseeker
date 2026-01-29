@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -13,19 +12,20 @@ const updateAdditionalInfoSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
+    const session = await auth()
+    if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await req.json()
     const data = updateAdditionalInfoSchema.parse(body)
 
     const application = await prisma.application.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!application) {
@@ -33,7 +33,7 @@ export async function PUT(
     }
 
     const updated = await prisma.application.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         additionalSkills: data.additionalSkills,
         preferredLocations: data.preferredLocations,

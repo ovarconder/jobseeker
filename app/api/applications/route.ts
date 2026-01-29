@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -11,7 +10,7 @@ const applicationSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -29,9 +28,9 @@ export async function GET(req: NextRequest) {
     if (needsMoreInfo === 'true') where.needsMoreInfo = true
 
     // If company user, only show applications for their jobs
-    if (session.user.role === 'COMPANY') {
+    if (session.user?.role === 'COMPANY') {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: session.user?.id },
         include: { company: true },
       })
 

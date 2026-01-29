@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const notification = await prisma.notification.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!notification) {
@@ -23,14 +23,14 @@ export async function PUT(
 
     // Check permissions
     if (
-      (notification.userId && notification.userId !== session.user.id) ||
-      (notification.seekerId && session.user.role !== 'ADMIN')
+      (notification.userId && notification.userId !== session.user?.id) ||
+      (notification.seekerId && session.user?.role !== 'ADMIN')
     ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const updated = await prisma.notification.update({
-      where: { id: params.id },
+      where: { id },
       data: { isRead: true },
     })
 

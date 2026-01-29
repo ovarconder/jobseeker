@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { lineClient } from '@/lib/line-client'
 import { z } from 'zod'
@@ -11,16 +10,17 @@ const applicationUpdateSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const application = await prisma.application.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         job: {
           include: {
@@ -36,9 +36,9 @@ export async function GET(
     }
 
     // Check permissions
-    if (session.user.role === 'COMPANY') {
+    if (session.user?.role === 'COMPANY') {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: session.user?.id },
         include: { company: true },
       })
 
@@ -56,19 +56,20 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await req.json()
     const data = applicationUpdateSchema.parse(body)
 
     const application = await prisma.application.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         job: {
           include: {
@@ -84,9 +85,9 @@ export async function PUT(
     }
 
     // Check permissions
-    if (session.user.role === 'COMPANY') {
+    if (session.user?.role === 'COMPANY') {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: session.user?.id },
         include: { company: true },
       })
 
@@ -97,7 +98,7 @@ export async function PUT(
 
     const oldStatus = application.status
     const updatedApplication = await prisma.application.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: data.status },
       include: {
         job: {

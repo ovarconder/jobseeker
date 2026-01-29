@@ -17,11 +17,12 @@ const jobUpdateSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const job = await prisma.job.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         company: true,
         applications: {
@@ -48,20 +49,21 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await req.json()
     const data = jobUpdateSchema.parse(body)
 
     // Check if job exists and user has permission
     const job = await prisma.job.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { company: { include: { user: true } } },
     })
 
@@ -71,8 +73,8 @@ export async function PUT(
 
     // Only company owner or admin can update
     if (
-      session.user.role !== 'ADMIN' &&
-      job.company.userId !== session.user.id
+      session.user?.role !== 'ADMIN' &&
+      job.company.userId !== session.user?.id
     ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
@@ -83,7 +85,7 @@ export async function PUT(
     }
 
     const updatedJob = await prisma.job.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         company: true,
@@ -102,16 +104,17 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const job = await prisma.job.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { company: { include: { user: true } } },
     })
 
@@ -121,14 +124,14 @@ export async function DELETE(
 
     // Only company owner or admin can delete
     if (
-      session.user.role !== 'ADMIN' &&
-      job.company.userId !== session.user.id
+      session.user?.role !== 'ADMIN' &&
+      job.company.userId !== session.user?.id
     ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     await prisma.job.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })
