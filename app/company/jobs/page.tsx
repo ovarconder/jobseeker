@@ -56,7 +56,7 @@ export default function JobsPage() {
     }
   }
 
-  const handleToggleStatus = async (job: any) {
+  const handleToggleStatus = async (job: any) => {
     const newStatus = job.status === 'ACTIVE' ? 'CLOSED' : 'ACTIVE'
     try {
       const res = await fetch(`/api/jobs/${job.id}`, {
