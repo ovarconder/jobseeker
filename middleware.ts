@@ -1,47 +1,39 @@
-import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { auth } from '@/lib/auth'
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token
-    const path = req.nextUrl.pathname
+export default async function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname
+  const session = await auth()
+
+  // Public routes
+  if (path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/liff') || path.startsWith('/api/line')) {
+    return NextResponse.next()
+  }
+
+  // Protected routes
+  if (path.startsWith('/admin') || path.startsWith('/company')) {
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
 
     // Admin routes
     if (path.startsWith('/admin')) {
-      if (token?.role !== 'ADMIN') {
+      if (session.user?.role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/login', req.url))
       }
     }
 
     // Company routes
     if (path.startsWith('/company')) {
-      if (token?.role !== 'COMPANY') {
+      if (session.user?.role !== 'COMPANY') {
         return NextResponse.redirect(new URL('/login', req.url))
       }
     }
-
-    return NextResponse.next()
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const path = req.nextUrl.pathname
-
-        // Public routes
-        if (path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/liff') || path.startsWith('/api/line')) {
-          return true
-        }
-
-        // Protected routes require token
-        if (path.startsWith('/admin') || path.startsWith('/company')) {
-          return !!token
-        }
-
-        return true
-      },
-    },
   }
-)
+
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: ['/admin/:path*', '/company/:path*'],
