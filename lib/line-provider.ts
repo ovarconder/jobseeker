@@ -1,4 +1,3 @@
-import type { OAuthConfig, OAuthUserConfig } from 'next-auth/providers/oauth'
 import { prisma } from './prisma'
 
 interface LINEProfile {
@@ -8,7 +7,13 @@ interface LINEProfile {
   email?: string
 }
 
-export function LINEProvider(options: OAuthUserConfig<LINEProfile>): OAuthConfig<LINEProfile> {
+interface LINEProviderOptions {
+  clientId: string
+  clientSecret: string
+  callbackUrl?: string
+}
+
+export function LINEProvider(options: LINEProviderOptions) {
   return {
     id: 'line',
     name: 'LINE',
