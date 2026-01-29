@@ -1,4 +1,4 @@
-import { FlexMessage, FlexBubble, FlexCarousel, FlexButton } from '@line/bot-sdk'
+import { FlexMessage, FlexBubble, FlexCarousel, FlexButton, FlexComponent, FlexBox, FlexText } from '@line/bot-sdk'
 
 export function createWelcomeMessage(liffUrl: string, simpleLiffUrl?: string): FlexMessage {
   const buttons: FlexButton[] = []
@@ -174,22 +174,27 @@ export function createJobBubble(job: any, liffUrl: string): FlexBubble {
           type: 'box',
           layout: 'baseline',
           spacing: 'sm',
-          contents: [
-            {
-              type: 'text',
-              text: job.title,
-              weight: 'bold',
-              size: 'xl',
-              wrap: true,
-              flex: 1,
-            },
-            ...(job.forElderly ? [{
-              type: 'text',
-              text: '👴',
-              size: 'sm',
-              flex: 0,
-            }] : []),
-          ],
+          contents: (() => {
+            const baseContents: FlexComponent[] = [
+              {
+                type: 'text',
+                text: job.title,
+                weight: 'bold',
+                size: 'xl',
+                wrap: true,
+                flex: 1,
+              },
+            ]
+            if (job.forElderly) {
+              baseContents.push({
+                type: 'text' as const,
+                text: '👴',
+                size: 'sm' as const,
+                flex: 0,
+              } as FlexText)
+            }
+            return baseContents
+          })(),
         },
         {
           type: 'box',
@@ -312,6 +317,194 @@ export function createJobCarousel(jobs: any[], liffUrl: string): FlexMessage {
 }
 
 export function createJobDetailsMessage(job: any, liffUrl: string, hasApplied: boolean): FlexMessage {
+  // Build body contents
+  const bodyContents: FlexComponent[] = [
+    {
+      type: 'text',
+      text: job.title,
+      weight: 'bold',
+      size: 'xl',
+      wrap: true,
+    },
+    {
+      type: 'separator',
+      margin: 'md',
+    },
+    {
+      type: 'text',
+      text: job.description,
+      wrap: true,
+      margin: 'md',
+      size: 'sm',
+      color: '#666666',
+    },
+    {
+      type: 'box',
+      layout: 'vertical',
+      margin: 'md',
+      spacing: 'sm',
+      contents: [
+        {
+          type: 'box',
+          layout: 'baseline',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'text',
+              text: 'บริษัท:',
+              color: '#aaaaaa',
+              size: 'sm',
+              flex: 1,
+            },
+            {
+              type: 'text',
+              text: job.company?.name || 'ไม่ระบุ',
+              wrap: true,
+              color: '#666666',
+              size: 'sm',
+              flex: 5,
+            },
+          ],
+        },
+        {
+          type: 'box',
+          layout: 'baseline',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'text',
+              text: 'สถานที่:',
+              color: '#aaaaaa',
+              size: 'sm',
+              flex: 1,
+            },
+            {
+              type: 'text',
+              text: job.location,
+              wrap: true,
+              color: '#666666',
+              size: 'sm',
+              flex: 5,
+            },
+          ],
+        },
+        {
+          type: 'box',
+          layout: 'baseline',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'text',
+              text: 'เงินเดือน:',
+              color: '#aaaaaa',
+              size: 'sm',
+              flex: 1,
+            },
+            {
+              type: 'text',
+              text: job.salary || 'ไม่ระบุ',
+              wrap: true,
+              color: '#666666',
+              size: 'sm',
+              flex: 5,
+            },
+          ],
+        },
+        {
+          type: 'box',
+          layout: 'baseline',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'text',
+              text: 'ประเภท:',
+              color: '#aaaaaa',
+              size: 'sm',
+              flex: 1,
+            },
+            {
+              type: 'text',
+              text: getJobTypeText(job.jobType),
+              wrap: true,
+              color: '#666666',
+              size: 'sm',
+              flex: 5,
+            },
+          ],
+        },
+        ...(job.forElderly ? [{
+          type: 'box' as const,
+          layout: 'baseline' as const,
+          spacing: 'sm' as const,
+          contents: [
+            {
+              type: 'text' as const,
+              text: 'สำหรับ:',
+              color: '#aaaaaa',
+              size: 'sm' as const,
+              flex: 1,
+            },
+            {
+              type: 'text' as const,
+              text: '👴 ผู้สูงอายุ',
+              wrap: true,
+              color: '#4F46E5',
+              size: 'sm' as const,
+              weight: 'bold' as const,
+              flex: 5,
+            },
+          ],
+        } as FlexBox] : []),
+      ],
+    },
+  ]
+
+  if (job.requirements) {
+    bodyContents.push(
+      {
+        type: 'text' as const,
+        text: 'คุณสมบัติ:',
+        weight: 'bold' as const,
+        margin: 'md' as const,
+        size: 'sm' as const,
+      } as FlexText,
+      {
+        type: 'text' as const,
+        text: job.requirements,
+        wrap: true,
+        margin: 'sm' as const,
+        size: 'sm' as const,
+        color: '#666666',
+      } as FlexText
+    )
+  }
+
+  // Build footer contents
+  const footerContents: FlexComponent[] = []
+  if (!hasApplied) {
+    footerContents.push({
+      type: 'button' as const,
+      style: 'primary' as const,
+      height: 'sm' as const,
+      action: {
+        type: 'postback' as const,
+        label: 'สมัครงาน',
+        data: `action=apply_job&jobId=${job.id}`,
+      },
+      color: '#4F46E5',
+    } as FlexButton)
+  }
+  footerContents.push({
+    type: 'button',
+    style: 'secondary',
+    height: 'sm',
+    action: {
+      type: 'postback',
+      label: 'กลับไปดูงานทั้งหมด',
+      data: 'action=browse_jobs',
+    },
+  })
+
   return {
     type: 'flex',
     altText: `รายละเอียดงาน: ${job.title}`,
@@ -320,188 +513,13 @@ export function createJobDetailsMessage(job: any, liffUrl: string, hasApplied: b
       body: {
         type: 'box',
         layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: job.title,
-            weight: 'bold',
-            size: 'xl',
-            wrap: true,
-          },
-          {
-            type: 'separator',
-            margin: 'md',
-          },
-          {
-            type: 'text',
-            text: job.description,
-            wrap: true,
-            margin: 'md',
-            size: 'sm',
-            color: '#666666',
-          },
-          {
-            type: 'box',
-            layout: 'vertical',
-            margin: 'md',
-            spacing: 'sm',
-            contents: [
-              {
-                type: 'box',
-                layout: 'baseline',
-                spacing: 'sm',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'บริษัท:',
-                    color: '#aaaaaa',
-                    size: 'sm',
-                    flex: 1,
-                  },
-                  {
-                    type: 'text',
-                    text: job.company?.name || 'ไม่ระบุ',
-                    wrap: true,
-                    color: '#666666',
-                    size: 'sm',
-                    flex: 5,
-                  },
-                ],
-              },
-              {
-                type: 'box',
-                layout: 'baseline',
-                spacing: 'sm',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'สถานที่:',
-                    color: '#aaaaaa',
-                    size: 'sm',
-                    flex: 1,
-                  },
-                  {
-                    type: 'text',
-                    text: job.location,
-                    wrap: true,
-                    color: '#666666',
-                    size: 'sm',
-                    flex: 5,
-                  },
-                ],
-              },
-              {
-                type: 'box',
-                layout: 'baseline',
-                spacing: 'sm',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'เงินเดือน:',
-                    color: '#aaaaaa',
-                    size: 'sm',
-                    flex: 1,
-                  },
-                  {
-                    type: 'text',
-                    text: job.salary || 'ไม่ระบุ',
-                    wrap: true,
-                    color: '#666666',
-                    size: 'sm',
-                    flex: 5,
-                  },
-                ],
-              },
-              {
-                type: 'box',
-                layout: 'baseline',
-                spacing: 'sm',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'ประเภท:',
-                    color: '#aaaaaa',
-                    size: 'sm',
-                    flex: 1,
-                  },
-                  {
-                    type: 'text',
-                    text: getJobTypeText(job.jobType),
-                    wrap: true,
-                    color: '#666666',
-                    size: 'sm',
-                    flex: 5,
-                  },
-                ],
-              },
-              ...(job.forElderly ? [{
-                type: 'box',
-                layout: 'baseline',
-                spacing: 'sm',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'สำหรับ:',
-                    color: '#aaaaaa',
-                    size: 'sm',
-                    flex: 1,
-                  },
-                  {
-                    type: 'text',
-                    text: '👴 ผู้สูงอายุ',
-                    wrap: true,
-                    color: '#4F46E5',
-                    size: 'sm',
-                    weight: 'bold',
-                    flex: 5,
-                  },
-                ],
-              }] : []),
-            ],
-          },
-          ...(job.requirements ? [{
-            type: 'text',
-            text: 'คุณสมบัติ:',
-            weight: 'bold',
-            margin: 'md',
-            size: 'sm',
-          }, {
-            type: 'text',
-            text: job.requirements,
-            wrap: true,
-            margin: 'sm',
-            size: 'sm',
-            color: '#666666',
-          }] : []),
-        ],
+        contents: bodyContents,
       },
       footer: {
         type: 'box',
         layout: 'vertical',
         spacing: 'sm',
-        contents: [
-          ...(hasApplied ? [] : [{
-            type: 'button',
-            style: 'primary',
-            height: 'sm',
-            action: {
-              type: 'postback',
-              label: 'สมัครงาน',
-              data: `action=apply_job&jobId=${job.id}`,
-            },
-            color: '#4F46E5',
-          }]),
-          {
-            type: 'button',
-            style: 'secondary',
-            height: 'sm',
-            action: {
-              type: 'postback',
-              label: 'กลับไปดูงานทั้งหมด',
-              data: 'action=browse_jobs',
-            },
-          },
-        ],
+        contents: footerContents,
       },
     },
   }
