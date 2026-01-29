@@ -87,55 +87,45 @@ async function main() {
   // Get companies
   const companies = await prisma.company.findMany()
 
-  // Create jobs
-  const jobs = [
-    {
-      companyId: companies[0].id,
-      title: 'พนักงานขาย',
-      description: 'รับสมัครพนักงานขายที่มีประสบการณ์',
-      location: 'กรุงเทพฯ',
-      salary: '25,000 - 35,000 บาท',
-      jobType: 'FULL_TIME' as const,
-      requirements: 'อายุ 50-65 ปี, มีประสบการณ์ขาย',
-      status: 'ACTIVE' as const,
-    },
-    {
-      companyId: companies[0].id,
-      title: 'พนักงานต้อนรับ',
-      description: 'รับสมัครพนักงานต้อนรับ',
-      location: 'กรุงเทพฯ',
-      salary: '20,000 - 30,000 บาท',
-      jobType: 'FULL_TIME' as const,
-      status: 'ACTIVE' as const,
-    },
-    {
-      companyId: companies[0].id,
-      title: 'พนักงานทำความสะอาด',
-      description: 'รับสมัครพนักงานทำความสะอาด',
-      location: 'กรุงเทพฯ',
-      salary: '15,000 - 20,000 บาท',
-      jobType: 'PART_TIME' as const,
-      status: 'PENDING' as const,
-    },
-    {
-      companyId: companies[1].id,
-      title: 'พนักงานการตลาด',
-      description: 'รับสมัครพนักงานการตลาด',
-      location: 'กรุงเทพฯ',
-      salary: '30,000 - 40,000 บาท',
-      jobType: 'FULL_TIME' as const,
-      status: 'ACTIVE' as const,
-    },
-    {
-      companyId: companies[1].id,
-      title: 'พนักงานดูแลลูกค้า',
-      description: 'รับสมัครพนักงานดูแลลูกค้า',
-      location: 'กรุงเทพฯ',
-      salary: '22,000 - 28,000 บาท',
-      jobType: 'FULL_TIME' as const,
-      status: 'ACTIVE' as const,
-    },
+  // Create jobs - 25 jobs for homepage
+  const jobTemplates = [
+    // Company 1 - Technology
+    { title: 'พนักงานขาย', description: 'รับสมัครพนักงานขายที่มีประสบการณ์ ทำงานกับทีมขายที่แข็งแกร่ง', location: 'กรุงเทพฯ', salary: '25,000 - 35,000 บาท', jobType: 'FULL_TIME' as const, requirements: 'อายุ 50-65 ปี, มีประสบการณ์ขาย', forElderly: true },
+    { title: 'พนักงานต้อนรับ', description: 'รับสมัครพนักงานต้อนรับที่ยิ้มแย้มแจ่มใส มีมนุษยสัมพันธ์ดี', location: 'กรุงเทพฯ', salary: '20,000 - 30,000 บาท', jobType: 'FULL_TIME' as const, forElderly: true },
+    { title: 'พนักงานทำความสะอาด', description: 'รับสมัครพนักงานทำความสะอาด ทำงานในสำนักงาน', location: 'กรุงเทพฯ', salary: '15,000 - 20,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
+    { title: 'พนักงานรักษาความปลอดภัย', description: 'รับสมัครพนักงานรักษาความปลอดภัย ทำงานกะ', location: 'กรุงเทพฯ', salary: '18,000 - 25,000 บาท', jobType: 'FULL_TIME' as const, forElderly: true },
+    { title: 'พนักงานขับรถส่งของ', description: 'รับสมัครพนักงานขับรถส่งของ มีใบขับขี่', location: 'กรุงเทพฯ', salary: '22,000 - 30,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานคลังสินค้า', description: 'รับสมัครพนักงานคลังสินค้า จัดเก็บและจัดส่งสินค้า', location: 'กรุงเทพฯ', salary: '18,000 - 25,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานดูแลสวน', description: 'รับสมัครพนักงานดูแลสวนและพื้นที่สีเขียว', location: 'กรุงเทพฯ', salary: '16,000 - 22,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
+    { title: 'พนักงานซักรีด', description: 'รับสมัครพนักงานซักรีดในโรงแรม', location: 'กรุงเทพฯ', salary: '17,000 - 23,000 บาท', jobType: 'FULL_TIME' as const, forElderly: true },
+    
+    // Company 2 - Marketing
+    { title: 'พนักงานการตลาด', description: 'รับสมัครพนักงานการตลาดดิจิทัล มีประสบการณ์', location: 'กรุงเทพฯ', salary: '30,000 - 40,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานดูแลลูกค้า', description: 'รับสมัครพนักงานดูแลลูกค้า Call Center', location: 'กรุงเทพฯ', salary: '22,000 - 28,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานขายออนไลน์', description: 'รับสมัครพนักงานขายออนไลน์ ทำงานที่บ้านได้', location: 'กรุงเทพฯ', salary: '20,000 - 30,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
+    { title: 'พนักงานจัดส่งเอกสาร', description: 'รับสมัครพนักงานจัดส่งเอกสารในพื้นที่กรุงเทพ', location: 'กรุงเทพฯ', salary: '18,000 - 24,000 บาท', jobType: 'PART_TIME' as const },
+    { title: 'พนักงานพิมพ์ข้อมูล', description: 'รับสมัครพนักงานพิมพ์ข้อมูล ทำงานที่บ้านได้', location: 'กรุงเทพฯ', salary: '15,000 - 22,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
+    { title: 'พนักงานตรวจสอบเอกสาร', description: 'รับสมัครพนักงานตรวจสอบเอกสาร', location: 'กรุงเทพฯ', salary: '20,000 - 28,000 บาท', jobType: 'FULL_TIME' as const, forElderly: true },
+    
+    // Additional diverse jobs
+    { title: 'พนักงานครัว', description: 'รับสมัครพนักงานครัวในร้านอาหาร', location: 'กรุงเทพฯ', salary: '18,000 - 25,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานเสิร์ฟ', description: 'รับสมัครพนักงานเสิร์ฟ ร้านอาหาร', location: 'กรุงเทพฯ', salary: '16,000 - 22,000 บาท', jobType: 'PART_TIME' as const },
+    { title: 'พนักงานซ่อมบำรุง', description: 'รับสมัครพนักงานซ่อมบำรุงทั่วไป', location: 'กรุงเทพฯ', salary: '22,000 - 30,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานดูแลผู้สูงอายุ', description: 'รับสมัครพนักงานดูแลผู้สูงอายุ', location: 'กรุงเทพฯ', salary: '20,000 - 28,000 บาท', jobType: 'FULL_TIME' as const, forElderly: true },
+    { title: 'พนักงานสอนพิเศษ', description: 'รับสมัครครูสอนพิเศษ วิชาคณิตศาสตร์', location: 'กรุงเทพฯ', salary: '300 - 500 บาท/ชั่วโมง', jobType: 'PART_TIME' as const },
+    { title: 'พนักงานขายของชำ', description: 'รับสมัครพนักงานขายของชำในร้าน', location: 'กรุงเทพฯ', salary: '17,000 - 23,000 บาท', jobType: 'FULL_TIME' as const, forElderly: true },
+    { title: 'พนักงานนวดแผนไทย', description: 'รับสมัครพนักงานนวดแผนไทย มีใบรับรอง', location: 'กรุงเทพฯ', salary: '25,000 - 35,000 บาท', jobType: 'FULL_TIME' as const },
+    { title: 'พนักงานตัดเย็บ', description: 'รับสมัครพนักงานตัดเย็บเสื้อผ้า', location: 'กรุงเทพฯ', salary: '18,000 - 25,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
+    { title: 'พนักงานดูแลสัตว์เลี้ยง', description: 'รับสมัครพนักงานดูแลสัตว์เลี้ยง', location: 'กรุงเทพฯ', salary: '20,000 - 28,000 บาท', jobType: 'PART_TIME' as const },
+    { title: 'พนักงานจัดดอกไม้', description: 'รับสมัครพนักงานจัดดอกไม้', location: 'กรุงเทพฯ', salary: '19,000 - 26,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
+    { title: 'พนักงานทำขนม', description: 'รับสมัครพนักงานทำขนมไทย', location: 'กรุงเทพฯ', salary: '18,000 - 24,000 บาท', jobType: 'PART_TIME' as const, forElderly: true },
   ]
+
+  const jobs = jobTemplates.map((template, index) => ({
+    ...template,
+    companyId: companies[index % companies.length].id,
+    status: 'ACTIVE' as const,
+  }))
 
   const createdJobs = []
   for (const job of jobs) {
@@ -144,6 +134,23 @@ async function main() {
   }
 
   console.log('Created jobs:', createdJobs.length)
+  
+  // Ensure we have at least 25 jobs
+  if (createdJobs.length < 25) {
+    const additionalJobsNeeded = 25 - createdJobs.length
+    for (let i = 0; i < additionalJobsNeeded; i++) {
+      const template = jobTemplates[i % jobTemplates.length]
+      const additionalJob = await prisma.job.create({
+        data: {
+          ...template,
+          companyId: companies[i % companies.length].id,
+          status: 'ACTIVE' as const,
+        },
+      })
+      createdJobs.push(additionalJob)
+    }
+    console.log('Created additional jobs. Total:', createdJobs.length)
+  }
 
   // Create job seekers
   const seekers = [

@@ -21,9 +21,15 @@ export async function GET(req: NextRequest) {
     const companyId = searchParams.get('companyId')
     const search = searchParams.get('search')
     const forElderly = searchParams.get('forElderly')
+    const limit = searchParams.get('limit')
 
     const where: any = {}
-    if (status) where.status = status
+    // Default to ACTIVE jobs for public access
+    if (!status) {
+      where.status = 'ACTIVE'
+    } else {
+      where.status = status
+    }
     if (companyId) where.companyId = companyId
     if (forElderly === 'true') where.forElderly = true
     if (search) {
@@ -44,6 +50,7 @@ export async function GET(req: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
+      take: limit ? parseInt(limit) : undefined,
     })
 
     return NextResponse.json(jobs)
