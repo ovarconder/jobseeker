@@ -1,7 +1,7 @@
-import { FlexMessage, FlexBubble, FlexCarousel } from '@line/bot-sdk'
+import { FlexMessage, FlexBubble, FlexCarousel, FlexButton } from '@line/bot-sdk'
 
 export function createWelcomeMessage(liffUrl: string, simpleLiffUrl?: string): FlexMessage {
-  const buttons = []
+  const buttons: FlexButton[] = []
   
   if (simpleLiffUrl) {
     buttons.push({
@@ -14,7 +14,7 @@ export function createWelcomeMessage(liffUrl: string, simpleLiffUrl?: string): F
         uri: simpleLiffUrl,
       },
       color: '#4F46E5',
-    })
+    } as FlexButton)
   }
   
   buttons.push({
@@ -27,7 +27,7 @@ export function createWelcomeMessage(liffUrl: string, simpleLiffUrl?: string): F
       uri: liffUrl,
     },
     ...(simpleLiffUrl ? {} : { color: '#4F46E5' }),
-  })
+  } as FlexButton)
 
   return {
     type: 'flex',
