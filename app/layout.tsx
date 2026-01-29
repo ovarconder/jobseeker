@@ -4,7 +4,7 @@ import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import Providers from '@/components/providers/session-provider'
 
-const inter = Inter({ subsets: ['latin', 'th'] })
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Job Matching Platform',

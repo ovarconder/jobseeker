@@ -52,3 +52,6 @@ Thumbs.db
 # Logs
 logs
 *.log
+
+#instruction
+*.md
