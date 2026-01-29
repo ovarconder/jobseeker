@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth()
     const body = await req.json()
     const data = applicationSchema.parse(body)
 
@@ -87,12 +88,51 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // For LINE users, seekerId should come from the request
-    // For web users, it should come from session
-    // This is a simplified version - adjust based on your auth flow
-    const seekerId = body.seekerId
+    // For web users, use session.user.id (must be SEEKER role)
+    // For LINE users, seekerId should come from the request body
+    let seekerId = body.seekerId
+    
+    if (!seekerId && session?.user) {
+      // Check if user is a SEEKER
+      if (session.user.role !== 'SEEKER') {
+        return NextResponse.json(
+          { error: 'Only job seekers can apply for jobs' },
+          { status: 403 }
+        )
+      }
+      
+      // For web users, create or find JobSeeker using userId as lineUserId
+      // (This is a workaround since JobSeeker currently only has lineUserId)
+      let seeker = await prisma.jobSeeker.findFirst({
+        where: { 
+          lineUserId: `web_${session.user.id}`,
+        },
+      })
+      
+      if (!seeker) {
+        // Create JobSeeker record for web user
+        const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+        })
+        
+        seeker = await prisma.jobSeeker.create({
+          data: {
+            lineUserId: `web_${session.user.id}`,
+            displayName: user?.name || 'User',
+            email: user?.email,
+            phone: user?.phone,
+          },
+        })
+      }
+      
+      seekerId = seeker.id
+    }
+    
     if (!seekerId) {
-      return NextResponse.json({ error: 'Seeker ID required' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Unauthorized. Please login to apply.' },
+        { status: 401 }
+      )
     }
 
     // Check if already applied

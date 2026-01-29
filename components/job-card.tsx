@@ -77,7 +77,7 @@ export function JobCard({ job }: JobCardProps) {
       </CardContent>
       
       <CardFooter className="pt-4 border-t">
-        <Link href={`/login?redirect=/jobs/${job.id}`} className="w-full">
+        <Link href={`/jobs/${job.id}`} className="w-full">
           <Button className="w-full" variant="default">
             ดูรายละเอียด
           </Button>
