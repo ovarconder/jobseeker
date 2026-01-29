@@ -13,6 +13,7 @@ datasource db {
 enum UserRole {
   ADMIN
   COMPANY
+  SEEKER
 }
 
 enum UserStatus {
@@ -60,6 +61,7 @@ model User {
   password    String
   role        UserRole
   name        String
+  phone       String?
   status      UserStatus  @default(PENDING)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
