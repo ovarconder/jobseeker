@@ -91,11 +91,21 @@ git push -u origin main
 
 1. ไปที่ [Vercel Dashboard](https://vercel.com/dashboard)
 2. เลือก Project → **Storage** → **Create Database**
-3. เลือก **Postgres**
+3. เลือก **Prisma Postgres (Instant Serverless Postgres)** ⭐
+   - **ทำไมเลือกตัวนี้?**
+     - ✅ ทำงานร่วมกับ Prisma ได้ดีที่สุด
+     - ✅ Serverless - เหมาะกับ Vercel
+     - ✅ Connection pooling built-in
+     - ✅ ไม่ต้องตั้งค่าเพิ่มเติม
+     - ✅ Auto-scaling
+   
+   **หมายเหตุ**: ถ้าต้องการ features เพิ่มเติม (เช่น Auth, Storage) อาจเลือก **Supabase (Postgres Backend)** แทน
 4. เลือก Region: **Singapore (sin1)** (ใกล้ไทยที่สุด)
 5. ตั้งชื่อ Database
 6. คลิก **Create**
 7. คัดลอก **Connection String** (จะใช้ในขั้นตอนถัดไป)
+   - Vercel จะแสดง Connection String ให้ทันที
+   - หรือไปที่ Storage → Database → Connection String
 
 ### ตัวเลือกที่ 2: Supabase (ฟรี)
 
@@ -128,9 +138,11 @@ git push -u origin main
 5. ตั้งค่า Project:
    - **Framework Preset**: Next.js (auto-detect)
    - **Root Directory**: `./`
-   - **Build Command**: `prisma generate && next build` (มีใน `vercel.json` แล้ว)
-   - **Output Directory**: `.next`
-   - **Install Command**: `npm install`
+   - **Build Command**: `npm run build` (มีใน `vercel.json` แล้ว - Vercel จะ detect อัตโนมัติ)
+   - **Output Directory**: `.next` (Vercel จะ detect อัตโนมัติ)
+   - **Install Command**: `npm install` (Vercel จะ detect อัตโนมัติ)
+   
+   **หมายเหตุ**: ถ้า Vercel detect Next.js อัตโนมัติ อาจไม่ต้องตั้งค่า Build Command ก็ได้ เพราะ `vercel.json` จะจัดการให้
 
 ### ขั้นตอนที่ 2: ตั้งค่า Environment Variables
 
