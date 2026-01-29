@@ -89,7 +89,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">⚡</span>
+                <span className="text-2xl">⚡</span> 
                 ใช้งานง่าย
               </CardTitle>
               <CardDescription>
