@@ -29,10 +29,10 @@ export default async function middleware(req: NextRequest) {
       if (session.user?.role !== 'COMPANY') {
         return NextResponse.redirect(new URL('/login', req.url))
       }
-      }
     }
+  }
 
-    return NextResponse.next()
+  return NextResponse.next()
 }
 
 export const config = {

@@ -1,9 +1,21 @@
-import { Client, middleware, MiddlewareConfig } from '@line/bot-sdk'
+import { Client, middleware, ClientConfig, MiddlewareConfig } from '@line/bot-sdk'
 
-const config: MiddlewareConfig = {
-  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
-  channelSecret: process.env.LINE_CHANNEL_SECRET || '',
+const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
+const channelSecret = process.env.LINE_CHANNEL_SECRET
+
+if (!channelAccessToken || !channelSecret) {
+  throw new Error('LINE_CHANNEL_ACCESS_TOKEN and LINE_CHANNEL_SECRET must be set')
 }
 
-export const lineClient = new Client(config)
-export const lineMiddleware = middleware(config)
+const clientConfig: ClientConfig = {
+  channelAccessToken,
+  channelSecret,
+}
+
+const middlewareConfig: MiddlewareConfig = {
+  channelAccessToken,
+  channelSecret,
+}
+
+export const lineClient = new Client(clientConfig)
+export const lineMiddleware = middleware(middlewareConfig)
