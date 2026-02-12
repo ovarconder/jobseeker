@@ -47,7 +47,7 @@ export default function CompanyDashboard() {
     ? new Date(profile.user.lastLoginAt).toLocaleString('th-TH', {
         day: 'numeric',
         month: 'short',
-        year: '2568',
+        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       })
