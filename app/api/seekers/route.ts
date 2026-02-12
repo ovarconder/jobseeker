@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
       prisma.jobSeeker.count({
         where: Object.keys(where).length ? where : undefined,
       }),
+      prisma.jobSeeker.count(),
       companyId
         ? prisma.savedSeeker.findMany({ where: { companyId }, select: { seekerId: true } }).then((r) => r.map((s) => s.seekerId))
         : Promise.resolve([] as string[]),
