@@ -8,9 +8,12 @@ const jobUpdateSchema = z.object({
   description: z.string().min(1).optional(),
   location: z.string().min(1).optional(),
   salary: z.string().optional(),
+  salaryMin: z.number().int().min(0).optional().nullable(),
+  salaryMax: z.number().int().min(0).optional().nullable(),
   jobType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP']).optional(),
   requirements: z.string().optional(),
   forElderly: z.boolean().optional(),
+  transitLineColors: z.string().optional().nullable(),
   status: z.enum(['PENDING', 'ACTIVE', 'CLOSED', 'REJECTED']).optional(),
   expiresAt: z.string().optional(),
 })

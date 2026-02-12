@@ -65,7 +65,19 @@ export default function CompanyLayout({
                 href="/company/applications"
                 className="text-sm font-medium text-gray-700 hover:text-gray-900"
               >
-                ใบสมัคร
+                Applicant Management
+              </Link>
+              <Link
+                href="/company/seekers"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                ดูเรซูเม่
+              </Link>
+              <Link
+                href="/company/packages"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                แพ็คเกจ
               </Link>
             </div>
           </div>

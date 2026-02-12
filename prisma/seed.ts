@@ -223,6 +223,55 @@ async function main() {
   }
 
   console.log('Created applications:', applications.length)
+
+  // Packages for company
+  const packageData = [
+    {
+      name: 'แพ็คเกจเริ่มต้น',
+      description: 'เหมาะสำหรับบริษัทที่ต้องการทดลองใช้บริการ',
+      price: 990,
+      creditsIncluded: 10,
+      features: JSON.stringify(['ประกาศงานได้ 3 ตำแหน่ง', 'ดูเรซูเม่ 10 ครั้ง', 'รองรับ 1 ผู้ใช้']),
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      name: 'แพ็คเกจมาตรฐาน',
+      description: 'เหมาะสำหรับบริษัทที่รับสมัครงานเป็นประจำ',
+      price: 2990,
+      creditsIncluded: 50,
+      features: JSON.stringify(['ประกาศงานได้ 10 ตำแหน่ง', 'ดูเรซูเม่ 50 ครั้ง', 'ค้นหาประวัติตามพื้นที่/สาย BTS']),
+      isActive: true,
+      sortOrder: 2,
+    },
+    {
+      name: 'แพ็คเกจองค์กร',
+      description: 'เหมาะสำหรับองค์กรขนาดใหญ่',
+      price: 9990,
+      creditsIncluded: 200,
+      features: JSON.stringify(['ประกาศงานไม่จำกัด', 'เครดิต 200 หน่วย', 'รายงานสถิติ', 'รองรับหลายผู้ใช้']),
+      isActive: true,
+      sortOrder: 3,
+    },
+  ]
+  for (const pkg of packageData) {
+    const existing = await prisma.package.findFirst({ where: { name: pkg.name } })
+    if (!existing) {
+      await prisma.package.create({
+        data: {
+          name: pkg.name,
+          description: pkg.description,
+          price: pkg.price,
+          creditsIncluded: pkg.creditsIncluded,
+          features: pkg.features,
+          isActive: pkg.isActive,
+          sortOrder: pkg.sortOrder,
+        },
+      })
+    }
+  }
+  console.log('Created packages for company')
+
   console.log('Seeding completed!')
 }
 

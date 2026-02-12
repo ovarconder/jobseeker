@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
+import { TRANSIT_LINES, serializeTransitLineColors } from '@/lib/transit-lines'
 
 export default function NewJobPage() {
   const router = useRouter()
@@ -25,9 +26,12 @@ export default function NewJobPage() {
     description: '',
     location: '',
     salary: '',
+    salaryMin: '' as string | number,
+    salaryMax: '' as string | number,
     jobType: 'FULL_TIME' as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP',
     requirements: '',
     forElderly: false,
+    transitLineIds: [] as string[],
     expiresAt: '',
   })
 
@@ -36,10 +40,17 @@ export default function NewJobPage() {
     setLoading(true)
 
     try {
+      const payload = {
+        ...formData,
+        salaryMin: formData.salaryMin !== '' ? Number(formData.salaryMin) : null,
+        salaryMax: formData.salaryMax !== '' ? Number(formData.salaryMax) : null,
+        transitLineColors: formData.transitLineIds.length > 0 ? serializeTransitLineColors(formData.transitLineIds) : null,
+      }
+      delete (payload as any).transitLineIds
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -107,13 +118,65 @@ export default function NewJobPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="salary">เงินเดือน</Label>
+                <Label htmlFor="salary">เงินเดือน (แสดงในประกาศ)</Label>
                 <Input
                   id="salary"
                   value={formData.salary}
                   onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
                   placeholder="เช่น 25,000 - 35,000 บาท"
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="salaryMin">เงินเดือนขั้นต่ำ (บาท) สำหรับ match</Label>
+                <Input
+                  id="salaryMin"
+                  type="number"
+                  min={0}
+                  value={formData.salaryMin === '' ? '' : formData.salaryMin}
+                  onChange={(e) => setFormData({ ...formData, salaryMin: e.target.value === '' ? '' : e.target.value })}
+                  placeholder="เช่น 25000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="salaryMax">เงินเดือนสูงสุด (บาท) สำหรับ match</Label>
+                <Input
+                  id="salaryMax"
+                  type="number"
+                  min={0}
+                  value={formData.salaryMax === '' ? '' : formData.salaryMax}
+                  onChange={(e) => setFormData({ ...formData, salaryMax: e.target.value === '' ? '' : e.target.value })}
+                  placeholder="เช่น 35000"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>สาย BTS/MRT ใกล้บริษัท</Label>
+              <div className="flex flex-wrap gap-2">
+                {TRANSIT_LINES.map((line) => (
+                  <label
+                    key={line.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm has-[:checked]:ring-2 has-[:checked]:ring-offset-1"
+                    style={{ borderColor: line.color }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.transitLineIds.includes(line.id)}
+                      onChange={(e) => {
+                        const next = e.target.checked
+                          ? [...formData.transitLineIds, line.id]
+                          : formData.transitLineIds.filter((id) => id !== line.id)
+                        setFormData({ ...formData, transitLineIds: next })
+                      }}
+                      className="sr-only"
+                    />
+                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: line.color }} />
+                    {line.label.replace(/ \(.*\)$/, '')}
+                  </label>
+                ))}
               </div>
             </div>
 

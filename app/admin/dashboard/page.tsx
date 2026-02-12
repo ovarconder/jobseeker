@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -59,8 +61,26 @@ export default function AdminDashboard() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">แดชบอร์ดผู้ดูแลระบบ</h1>
-        <p className="mt-2 text-gray-600">ภาพรวมของระบบ</p>
+        <h1 className="text-3xl font-bold">แดชบอร์ดแอดมินใหญ่</h1>
+        <p className="mt-2 text-gray-600">จัดการบริษัท แพ็คเกจราคา ใบสมัคร ขอข้อมูลเพิ่ม ประสานงาน สถานะสัมภาษณ์/ผ่าน-ไม่ผ่าน</p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/companies">บริษัทที่สมัคร</Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/packages">แพ็คเกจราคา</Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/applications">ใบสมัครงาน</Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/applications?filter=interview">สถานะสัมภาษณ์</Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/users">ผู้ใช้</Link>
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

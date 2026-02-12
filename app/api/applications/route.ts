@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')
     const companyId = searchParams.get('companyId')
     const needsMoreInfo = searchParams.get('needsMoreInfo')
+    const saved = searchParams.get('saved')
 
     const where: any = {}
 
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
     if (needsMoreInfo === 'true') where.needsMoreInfo = true
 
     // If company user, only show applications for their jobs
+    let companyIdResolved: string | null = null
     if (session.user?.role === 'COMPANY') {
       const user = await prisma.user.findUnique({
         where: { id: session.user?.id },
@@ -35,10 +37,19 @@ export async function GET(req: NextRequest) {
       })
 
       if (user?.company) {
+        companyIdResolved = user.company.id
         where.job = {
           companyId: user.company.id,
         }
       }
+    }
+
+    if (saved === '1' && companyIdResolved) {
+      const savedIds = await prisma.savedApplication.findMany({
+        where: { companyId: companyIdResolved },
+        select: { applicationId: true },
+      })
+      where.id = { in: savedIds.map((s) => s.applicationId) }
     }
 
     if (companyId) {

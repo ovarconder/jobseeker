@@ -708,7 +708,9 @@ function getJobTypeText(jobType: string): string {
 function getStatusEmoji(status: string): string {
   const emojis: Record<string, string> = {
     PENDING: '⏳',
+    OPENED: '👀',
     REVIEWING: '👀',
+    INTERVIEW_SCHEDULED: '📅',
     ACCEPTED: '✅',
     REJECTED: '❌',
     WITHDRAWN: '↩️',
@@ -719,9 +721,11 @@ function getStatusEmoji(status: string): string {
 function getStatusText(status: string): string {
   const texts: Record<string, string> = {
     PENDING: 'รอตรวจสอบ',
+    OPENED: 'เปิดอ่านแล้ว',
     REVIEWING: 'กำลังพิจารณา',
-    ACCEPTED: 'รับแล้ว',
-    REJECTED: 'ปฏิเสธ',
+    INTERVIEW_SCHEDULED: 'นัดสัมภาษณ์',
+    ACCEPTED: 'ผ่าน',
+    REJECTED: 'ไม่ผ่าน',
     WITHDRAWN: 'ถอนการสมัคร',
   }
   return texts[status] || status

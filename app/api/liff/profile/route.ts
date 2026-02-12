@@ -10,6 +10,11 @@ const profileUpdateSchema = z.object({
   education: z.string().optional(),
   experience: z.string().optional(),
   skills: z.string().optional(),
+  preferredArea: z.string().optional().nullable(),
+  transitLineColors: z.string().optional().nullable(), // JSON array e.g. '["RED","BLUE"]'
+  preferredJobTypes: z.string().optional().nullable(), // JSON array e.g. '["FULL_TIME","PART_TIME"]'
+  expectedSalaryMin: z.number().int().min(0).optional().nullable(),
+  expectedSalaryMax: z.number().int().min(0).optional().nullable(),
 })
 
 export async function GET(req: NextRequest) {
@@ -50,6 +55,11 @@ export async function PUT(req: NextRequest) {
         education: data.education,
         experience: data.experience,
         skills: data.skills,
+        preferredArea: data.preferredArea ?? undefined,
+        transitLineColors: data.transitLineColors ?? undefined,
+        preferredJobTypes: data.preferredJobTypes ?? undefined,
+        expectedSalaryMin: data.expectedSalaryMin ?? undefined,
+        expectedSalaryMax: data.expectedSalaryMax ?? undefined,
       },
     })
 

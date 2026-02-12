@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,11 +50,15 @@ interface Application {
   }
 }
 
+type FilterType = 'all' | 'needsInfo' | 'interview' | 'accepted' | 'rejected'
+
 export default function ApplicationsPage() {
   const { toast } = useToast()
+  const searchParams = useSearchParams()
+  const filterFromUrl = (searchParams.get('filter') as FilterType) || 'all'
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'needsInfo'>('needsInfo')
+  const [filter, setFilter] = useState<FilterType>(filterFromUrl)
   const [selectedApp, setSelectedApp] = useState<Application | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [formData, setFormData] = useState({
@@ -63,14 +68,20 @@ export default function ApplicationsPage() {
   })
 
   useEffect(() => {
+    setFilter(filterFromUrl)
+  }, [filterFromUrl])
+
+  useEffect(() => {
     fetchApplications()
   }, [filter])
 
   const fetchApplications = async () => {
     try {
-      const url = filter === 'needsInfo' 
-        ? '/api/applications?needsMoreInfo=true'
-        : '/api/applications'
+      let url = '/api/applications'
+      if (filter === 'needsInfo') url += '?needsMoreInfo=true'
+      else if (filter === 'interview') url += '?status=INTERVIEW_SCHEDULED'
+      else if (filter === 'accepted') url += '?status=ACCEPTED'
+      else if (filter === 'rejected') url += '?status=REJECTED'
       const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to fetch applications')
       const data = await res.json()
@@ -125,15 +136,21 @@ export default function ApplicationsPage() {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       PENDING: 'default',
+      OPENED: 'secondary',
       REVIEWING: 'secondary',
+      INTERVIEW_SCHEDULED: 'default',
       ACCEPTED: 'default',
       REJECTED: 'destructive',
+      WITHDRAWN: 'outline',
     }
     const labels: Record<string, string> = {
       PENDING: 'รอตรวจสอบ',
+      OPENED: 'เปิดอ่านแล้ว',
       REVIEWING: 'กำลังพิจารณา',
-      ACCEPTED: 'รับแล้ว',
-      REJECTED: 'ปฏิเสธ',
+      INTERVIEW_SCHEDULED: 'นัดสัมภาษณ์',
+      ACCEPTED: 'ผ่าน',
+      REJECTED: 'ไม่ผ่าน',
+      WITHDRAWN: 'ถอนสมัคร',
     }
     return <Badge variant={variants[status] || 'outline'}>{labels[status] || status}</Badge>
   }
@@ -149,30 +166,58 @@ export default function ApplicationsPage() {
         <p className="mt-2 text-gray-600">ดูและจัดการใบสมัครงานทั้งหมด</p>
       </div>
 
-      <div className="mb-4 flex gap-2">
-        <Button
-          variant={filter === 'needsInfo' ? 'default' : 'outline'}
-          onClick={() => setFilter('needsInfo')}
-        >
-          ต้องการข้อมูลเพิ่มเติม ({applications.filter(a => a.needsMoreInfo).length})
-        </Button>
+      <div className="mb-4 flex flex-wrap gap-2">
         <Button
           variant={filter === 'all' ? 'default' : 'outline'}
+          size="sm"
           onClick={() => setFilter('all')}
         >
           ทั้งหมด
+        </Button>
+        <Button
+          variant={filter === 'needsInfo' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilter('needsInfo')}
+        >
+          ขอข้อมูลเพิ่มเติม
+        </Button>
+        <Button
+          variant={filter === 'interview' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilter('interview')}
+        >
+          นัดสัมภาษณ์
+        </Button>
+        <Button
+          variant={filter === 'accepted' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilter('accepted')}
+        >
+          ผ่าน
+        </Button>
+        <Button
+          variant={filter === 'rejected' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilter('rejected')}
+        >
+          ไม่ผ่าน
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>
-            {filter === 'needsInfo' ? 'ใบสมัครที่ต้องการข้อมูลเพิ่มเติม' : 'ใบสมัครทั้งหมด'}
+            {filter === 'needsInfo' && 'ใบสมัครที่ต้องการข้อมูลเพิ่มเติม'}
+            {filter === 'interview' && 'ใบสมัครที่นัดสัมภาษณ์'}
+            {filter === 'accepted' && 'ใบสมัครที่ผ่าน'}
+            {filter === 'rejected' && 'ใบสมัครที่ไม่ผ่าน'}
+            {filter === 'all' && 'ใบสมัครทั้งหมด'}
           </CardTitle>
           <CardDescription>
-            {filter === 'needsInfo' 
-              ? 'ติดต่อผู้สมัครเพื่อขอข้อมูลเพิ่มเติม เช่น ทักษะที่ถนัด, พื้นที่ที่สามารถทำงานได้'
-              : 'รายการใบสมัครงานทั้งหมด'}
+            {filter === 'needsInfo' && 'ติดต่อผู้สมัครเพื่อขอข้อมูลเพิ่มเติม เช่น ทักษะที่ถนัด, พื้นที่ที่สามารถทำงานได้'}
+            {filter === 'interview' && 'ดูสถานะการนัดสัมภาษณ์ — ประสานงานระหว่างบริษัทและผู้สมัคร'}
+            {(filter === 'accepted' || filter === 'rejected') && 'ดูผลการพิจารณาจากบริษัท'}
+            {filter === 'all' && 'รายการใบสมัครงานทั้งหมด — จัดการขอข้อมูลเพิ่ม ประสานงาน ดูสถานะสัมภาษณ์/ผ่าน-ไม่ผ่าน'}
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -14,6 +14,8 @@ export default function ApplicationDetailPage() {
   const [application, setApplication] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     fetchApplication()
@@ -25,10 +27,35 @@ export default function ApplicationDetailPage() {
       if (!res.ok) throw new Error('Failed to fetch application')
       const data = await res.json()
       setApplication(data)
+      setSaved(!!data.saved)
     } catch (error) {
       toast({ title: 'เกิดข้อผิดพลาด', variant: 'destructive' })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const toggleSave = async () => {
+    if (!application?.id) return
+    setSaving(true)
+    try {
+      if (saved) {
+        await fetch(`/api/company/saved-applications/${application.id}`, { method: 'DELETE' })
+        setSaved(false)
+        toast({ title: 'ยกเลิกการบันทึกแล้ว' })
+      } else {
+        await fetch('/api/company/saved-applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ applicationId: application.id }),
+        })
+        setSaved(true)
+        toast({ title: 'บันทึกใบสมัครแล้ว' })
+      }
+    } catch {
+      toast({ title: 'เกิดข้อผิดพลาด', variant: 'destructive' })
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -55,15 +82,20 @@ export default function ApplicationDetailPage() {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
       PENDING: 'secondary',
-      REVIEWING: 'warning',
+      OPENED: 'outline',
+      REVIEWING: 'secondary',
+      INTERVIEW_SCHEDULED: 'warning',
       ACCEPTED: 'success',
       REJECTED: 'destructive',
+      WITHDRAWN: 'outline',
     }
     const labels: Record<string, string> = {
       PENDING: 'รอพิจารณา',
+      OPENED: 'เปิดอ่านแล้ว',
       REVIEWING: 'กำลังพิจารณา',
-      ACCEPTED: 'รับแล้ว',
-      REJECTED: 'ปฏิเสธ',
+      INTERVIEW_SCHEDULED: 'นัดสัมภาษณ์',
+      ACCEPTED: 'ผ่าน',
+      REJECTED: 'ไม่ผ่าน',
       WITHDRAWN: 'ถอนการสมัคร',
     }
     return <Badge variant={variants[status] || 'default'}>{labels[status] || status}</Badge>
@@ -161,31 +193,54 @@ export default function ApplicationDetailPage() {
       <Card className="mt-6">
         <CardHeader>
           <CardTitle>การจัดการ</CardTitle>
-          <CardDescription>อัปเดตสถานะใบสมัคร</CardDescription>
+          <CardDescription>อัปเดตสถานะใบสมัคร: เปิดอ่านแล้ว → นัดสัมภาษณ์ → ผ่าน/ไม่ผ่าน</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex space-x-4">
+        <CardContent className="space-y-4">
+          <Button
+            variant="outline"
+            onClick={toggleSave}
+            disabled={saving}
+          >
+            {saved ? 'ยกเลิกการบันทึก' : 'บันทึกใบสมัคร'}
+          </Button>
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              onClick={() => updateStatus('REVIEWING')}
-              disabled={updating || application.status === 'REVIEWING'}
+              onClick={() => updateStatus('OPENED')}
+              disabled={updating || application.status === 'OPENED'}
             >
-              กำลังพิจารณา
+              เปิดอ่านแล้ว
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => updateStatus('INTERVIEW_SCHEDULED')}
+              disabled={updating || application.status === 'INTERVIEW_SCHEDULED'}
+            >
+              นัดสัมภาษณ์
             </Button>
             <Button
               variant="default"
               onClick={() => updateStatus('ACCEPTED')}
               disabled={updating || application.status === 'ACCEPTED'}
             >
-              รับเข้าทำงาน
+              ผ่าน
             </Button>
             <Button
               variant="destructive"
               onClick={() => updateStatus('REJECTED')}
               disabled={updating || application.status === 'REJECTED'}
             >
-              ปฏิเสธ
+              ไม่ผ่าน
             </Button>
+            {(application.status === 'PENDING' || application.status === 'REVIEWING') && (
+              <Button
+                variant="outline"
+                onClick={() => updateStatus('REVIEWING')}
+                disabled={updating || application.status === 'REVIEWING'}
+              >
+                กำลังพิจารณา
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

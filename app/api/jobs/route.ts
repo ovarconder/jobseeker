@@ -8,9 +8,12 @@ const jobSchema = z.object({
   description: z.string().min(1),
   location: z.string().min(1),
   salary: z.string().optional(),
+  salaryMin: z.number().int().min(0).optional().nullable(),
+  salaryMax: z.number().int().min(0).optional().nullable(),
   jobType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP']),
   requirements: z.string().optional(),
   forElderly: z.boolean().optional().default(false),
+  transitLineColors: z.string().optional().nullable(), // JSON array e.g. '["RED","BLUE"]'
   expiresAt: z.string().optional(),
 })
 
@@ -22,9 +25,10 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search')
     const forElderly = searchParams.get('forElderly')
     const limit = searchParams.get('limit')
+    const jobType = searchParams.get('jobType')
+    const location = searchParams.get('location')
 
     const where: any = {}
-    // Default to ACTIVE jobs for public access
     if (!status) {
       where.status = 'ACTIVE'
     } else {
@@ -32,6 +36,10 @@ export async function GET(req: NextRequest) {
     }
     if (companyId) where.companyId = companyId
     if (forElderly === 'true') where.forElderly = true
+    if (jobType) where.jobType = jobType
+    if (location) {
+      where.location = { contains: location, mode: 'insensitive' }
+    }
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -82,7 +90,16 @@ export async function POST(req: NextRequest) {
 
     const job = await prisma.job.create({
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        salary: data.salary,
+        salaryMin: data.salaryMin ?? null,
+        salaryMax: data.salaryMax ?? null,
+        jobType: data.jobType,
+        requirements: data.requirements,
+        forElderly: data.forElderly ?? false,
+        transitLineColors: data.transitLineColors ?? null,
         companyId: user.company.id,
         status: 'PENDING',
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,

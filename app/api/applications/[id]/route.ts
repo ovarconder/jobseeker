@@ -5,7 +5,7 @@ import { lineClient } from '@/lib/line-client'
 import { z } from 'zod'
 
 const applicationUpdateSchema = z.object({
-  status: z.enum(['PENDING', 'REVIEWING', 'ACCEPTED', 'REJECTED', 'WITHDRAWN']),
+  status: z.enum(['PENDING', 'OPENED', 'REVIEWING', 'INTERVIEW_SCHEDULED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN']),
 })
 
 export async function GET(
@@ -35,7 +35,7 @@ export async function GET(
       return NextResponse.json({ error: 'Application not found' }, { status: 404 })
     }
 
-    // Check permissions
+    // Check permissions and record view for company
     if (session.user?.role === 'COMPANY') {
       const user = await prisma.user.findUnique({
         where: { id: session.user?.id },
@@ -45,6 +45,23 @@ export async function GET(
       if (user?.company?.id !== application.job.companyId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
+
+      await prisma.applicationView.create({
+        data: {
+          companyId: application.job.companyId,
+          applicationId: id,
+        },
+      }).catch(() => {})
+
+      const saved = await prisma.savedApplication.findUnique({
+        where: {
+          companyId_applicationId: {
+            companyId: application.job.companyId,
+            applicationId: id,
+          },
+        },
+      })
+      return NextResponse.json({ ...application, saved: !!saved })
     }
 
     return NextResponse.json(application)

@@ -49,6 +49,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('Your account is pending approval')
         }
 
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        })
+
         return {
           id: user.id,
           email: user.email,
